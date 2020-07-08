@@ -34,8 +34,8 @@
           return result.json();
         })
         .then(function (data) {
-         console.log(JSON.stringify(data));
-         console.log(JSON.stringify(purchase));
+           console.log(JSON.stringify(data));
+           console.log(JSON.stringify(purchase));
           const style = {
             base: {
               color: "#32325d",
@@ -78,6 +78,10 @@
           });
 
           stripe_elements.previous_intent = data;
+        })
+        .catch(function (error) {
+          console.log(error);
+          console.log();
         });
     };
     // Calls stripe.confirmCardPayment
@@ -147,12 +151,12 @@
     input_amount.addEventListener("change", function (event) {
       // console.log(event.target.value);
       const purchase = {
-        participation: event.target.value,
+        amount: event.target.value,
         id: stripe_elements.previous_intent
-          ? stripe_elements.previous_intent
+          ? stripe_elements.previous_intent.id
           : "",
       };
-      console.log(JSON.stringify(purchase));
+        console.log(JSON.stringify(purchase));
       createPaymentIntent(stripe_elements, purchase);
     });
   }); /* DOMContentLoaded */
