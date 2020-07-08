@@ -19,6 +19,10 @@
     // Create a PaymentIntent.
     // Is called tentatively everytime an amount change is commited by the user.
     const createPaymentIntent = function (stripe_elements, purchase) {
+      if (stripe_elements.previous_intent !== undefined) {
+        console.log(stripe_elements.previous_intent);
+      }
+
       fetch("/create.php", {
         method: "POST",
         headers: {
@@ -30,9 +34,8 @@
           return result.json();
         })
         .then(function (data) {
-        //   console.log(data);
-        //   const elements = stripe.elements();
-
+         console.log(JSON.stringify(data));
+         console.log(JSON.stringify(purchase));
           const style = {
             base: {
               color: "#32325d",
@@ -51,15 +54,12 @@
           };
 
           const previous_element = stripe_elements.getElement("card");
-          console.log(previous_element);
           if (previous_element !== null) {
-              console.log(previous_element);
-              previous_element.destroy();
-            //   console.log(previous_element);
+            previous_element.destroy();
           }
           const card = stripe_elements.create("card", { style: style });
 
-          // Stripe injects an iframe into the DOM 
+          // Stripe injects an iframe into the DOM
           card.mount("#card-element");
 
           card.on("change", function (event) {
@@ -74,8 +74,10 @@
           form.addEventListener("submit", function (event) {
             event.preventDefault();
             // Complete payment when the submit button is clicked
-            // payWithCard(stripe, card, data.clientSecret);
+            payWithCard(stripe, card, data.clientSecret);
           });
+
+          stripe_elements.previous_intent = data;
         });
     };
     // Calls stripe.confirmCardPayment
@@ -142,12 +144,16 @@
     //----------------------------------------------------------- amount
     // The items the customer wants to buy
     const input_amount = document.querySelector("#form_payment_amount");
-    input_amount.addEventListener("change", function(event) {
-        // console.log(event.target.value);
-        const purchase = {
-            items: [{ participation: event.target.value }],
-          };
-        createPaymentIntent(stripe_elements, purchase);
+    input_amount.addEventListener("change", function (event) {
+      // console.log(event.target.value);
+      const purchase = {
+        participation: event.target.value,
+        id: stripe_elements.previous_intent
+          ? stripe_elements.previous_intent
+          : "",
+      };
+      console.log(JSON.stringify(purchase));
+      createPaymentIntent(stripe_elements, purchase);
     });
   }); /* DOMContentLoaded */
 })(); /* IIFE */
