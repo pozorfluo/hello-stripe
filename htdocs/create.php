@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-// require 'vendor/autoload.php';
+require 'vendor/autoload.php';
 
 // This is your real test secret API key.
 \Stripe\Stripe::setApiKey('sk_test_51GxBXtBaAL5MTpCuXxJBzIB2JAqQtxPCV8ivS0jPWixXK1W6feqkUk6M4Hm3d7PQcVpsegEHyVFCsPe09KYAO8DY00uBBxYUe0');
@@ -21,17 +21,17 @@ try {
         'currency' => 'eur',
     ];
 
-    $paymentIntent = \Stripe\PaymentIntent::create($stripeParams);
-    // if (empty($json_obj['id'] )) {
-    //     $paymentIntent = \Stripe\PaymentIntent::create($stripeParams);
-    // } else {
-    //     $paymentIntent = \Stripe\PaymentIntent::update(
-    //         $json_obj['id'], 
-    //         $stripeParams);
-    // }
+    // $paymentIntent = \Stripe\PaymentIntent::create($stripeParams);
+    if (empty($json_obj['id'] )) {
+        $paymentIntent = \Stripe\PaymentIntent::create($stripeParams);
+    } else {
+        $paymentIntent = \Stripe\PaymentIntent::update(
+            $json_obj['id'], 
+            $stripeParams);
+    }
 
     $output = [
-        // 'id' => $paymentIntent->id,
+        'id' => $paymentIntent->id,
         'clientSecret' => $paymentIntent->client_secret,
         'amount' =>  $amount,
     ];

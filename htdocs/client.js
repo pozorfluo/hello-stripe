@@ -19,9 +19,9 @@
     // Create a PaymentIntent.
     // Is called tentatively everytime an amount change is commited by the user.
     const createPaymentIntent = function (stripe_elements, purchase) {
-      if (stripe_elements.previous_intent !== undefined) {
-        console.log(stripe_elements.previous_intent);
-      }
+      //   if (stripe_elements.previous_intent !== undefined) {
+      //     console.log(stripe_elements.previous_intent);
+      //   }
 
       fetch("/create.php", {
         method: "POST",
@@ -34,8 +34,8 @@
           return result.json();
         })
         .then(function (data) {
-           console.log(JSON.stringify(data));
-           console.log(JSON.stringify(purchase));
+          console.log(JSON.stringify(data));
+          console.log(JSON.stringify(purchase));
           const style = {
             base: {
               color: "#32325d",
@@ -53,29 +53,31 @@
             },
           };
 
-          const previous_element = stripe_elements.getElement("card");
-          if (previous_element !== null) {
-            previous_element.destroy();
+          let card = stripe_elements.getElement("card");
+          console.log(card);
+          if (card === null) {
+            // previous_element.destroy();
+            card = stripe_elements.create("card", { style: style });
+            console.log(card);
+            // Stripe injects an iframe into the DOM
+            card.mount("#card-element");
+
+            card.on("change", function (event) {
+              // Disable the Pay button if there are no card details in the Element
+              document.querySelector("button").disabled = event.empty;
+              document.querySelector("#card-errors").textContent = event.error
+                ? event.error.message
+                : "";
+            });
+
+            const form = document.getElementById("payment-form");
+            form.addEventListener("submit", function (event) {
+              console.log("payWithCard !");
+              event.preventDefault();
+              // Complete payment when the submit button is clicked
+              payWithCard(stripe, card, data.clientSecret);
+            });
           }
-          const card = stripe_elements.create("card", { style: style });
-
-          // Stripe injects an iframe into the DOM
-          card.mount("#card-element");
-
-          card.on("change", function (event) {
-            // Disable the Pay button if there are no card details in the Element
-            document.querySelector("button").disabled = event.empty;
-            document.querySelector("#card-errors").textContent = event.error
-              ? event.error.message
-              : "";
-          });
-
-          const form = document.getElementById("payment-form");
-          form.addEventListener("submit", function (event) {
-            event.preventDefault();
-            // Complete payment when the submit button is clicked
-            payWithCard(stripe, card, data.clientSecret);
-          });
 
           stripe_elements.previous_intent = data;
         })
@@ -156,7 +158,13 @@
           ? stripe_elements.previous_intent.id
           : "",
       };
-        console.log(JSON.stringify(purchase));
+      console.log(JSON.stringify(purchase));
+
+      //   const previous_element = stripe_elements.getElement("card");
+      //   if (previous_element !== null) {
+      //     previous_element.destroy();
+      //   }
+
       createPaymentIntent(stripe_elements, purchase);
     });
   }); /* DOMContentLoaded */
